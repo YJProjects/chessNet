@@ -1,0 +1,31 @@
+body {   
+    margin : 0px;
+    background-color: beige;
+    display: flex;
+    justify-content: center;
+    
+}
+
+#chessBoard {
+    border-radius: 15px;
+    overflow: hidden;
+    margin-top: 10%
+}
+
+.square {
+    height: 70px;
+    width: 70px;
+}
+
+.square.light {
+    background-color: #ffd599;
+}
+
+.square.dark {
+    background-color: #b16e41;
+}
+
+.row {
+    display: flex;
+}
+
