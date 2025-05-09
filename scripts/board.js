@@ -66,7 +66,6 @@ setBoard(gameStartFen);
 
 //Listen for user to click on a piece
 const pieces = document.getElementsByClassName('piece')
-
 for (let piece of pieces){
-  piece.addEventListener("click", API(piece))
+  piece.addEventListener("click", API)
 }
