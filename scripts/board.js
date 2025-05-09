@@ -1,16 +1,58 @@
+import API from "./apiCall.js";
+
+function setBoard(FEN) {
+
+  const piece_FEN = FEN.split(" ")[0];
+  const rows = piece_FEN.split("/");
+
+  let index = 0;
+  for (let row of rows) {
+    for (let piece of row) {
+      if (!isNaN(piece)) { //It is a number
+
+        for (let i = 0; i<Number(piece); i++) {
+          let square = document.getElementsByClassName(index)[0]
+          square.classList.add("empty")
+          index++
+        }
+      }
+      else {
+          let square = document.getElementsByClassName(index)[0]
+          let piece_img = document.createElement('img')
+          
+          square.classList.add('piece');
+          
+          if (piece === piece.toUpperCase()) {
+            piece = piece.toUpperCase() + "D";
+          }
+          else {
+            piece = piece.toLowerCase() + "l"
+          }
+          
+          piece_img.src = `../../images/pieces/${piece}.svg`
+          square.appendChild(piece_img)
+          index++
+        
+      }
+  }
+}
+}
+
+
 let chessboard = document.getElementById("chessBoard");
 let gameStartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-for (let row = 0; row <= 7; row++){
-    const newRow =document.createElement('div');
+//Add alternating empty light and dark squares
+for (let row = 7; row >= 0; row--){ //Starting with A8 -> H8 then A7 -> H7 .... A1 -> H1;
+    const newRow = document.createElement('div');
     newRow.classList.add("row");
 
     for (let column = 0; column <= 7; column++){
         const newSquare = document.createElement('div');
 
-        const index = 63 - ((row  * 8) + column)
+        const index = ((row  * 8) + column);
         
-        newSquare.classList.add("square")
+        newSquare.classList.add("square");
         newSquare.classList.add((row + column) % 2 == 0 ? "light" : "dark");
         newSquare.classList.add(index);
         newRow.appendChild(newSquare);
@@ -19,43 +61,12 @@ for (let row = 0; row <= 7; row++){
     chessboard.appendChild(newRow);
 }
 
-
-
-function setBoard(FEN) {
-  const board = [];
-  const rows = FEN.split(' ')[0].split('/');
-
-  for (let row of rows) {
-    const boardRow = [];
-    for (let char of row) {
-      if (isNaN(char)) {
-        boardRow.push(char); 
-      } else {
-        for (let i = 0; i < parseInt(char); i++) {
-          boardRow.push(null);
-        }
-      }
-    }
-    board.push(boardRow);
-    }
-
-    let index = 0
-    let temp = document.getElementsByClassName('0')[0]
-    console.log(temp.classList)
-    for (let row of board) {
-        for (let piece of row) {
-            let square = document.getElementsByClassName(String(index))[0]
-            console.log(index, `{String(index)`)
-            if (piece != null){
-                square.classList.add(piece)
-            }
-            else {
-                square.classList.add('empty')
-            }
-            index++
-        }
-    }
-}
-
-
 setBoard(gameStartFen);
+
+
+//Listen for user to click on a piece
+const pieces = document.getElementsByClassName('piece')
+
+for (let piece of pieces){
+  piece.addEventListener("click", API(piece))
+}
