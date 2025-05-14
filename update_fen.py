@@ -1,0 +1,53 @@
+def update_FEN(FEN, start_index, target_index): #return piece type independent of colour
+     index_piece = {}
+     #for easy representation we'll convert fen to a index : piece Hashmap, manipulate the hashmap and convert it back into FEN
+     index = 0
+     Fenpieces = FEN.split(" ")[0]
+     FENrows = Fenpieces.split("/")[::-1] #Reverse FEN so we start from index 0
+     for row in FENrows:
+          for s in row:
+               if s.isdigit():
+                    for i in range(int(s)):
+                         index_piece[index] = 1
+                         index += 1
+               else:
+                    index_piece[index] = s
+                    index += 1
+          
+     piece = index_piece[start_index] #Remember the piece_type at start_square
+     index_piece[start_index] = 1 #Since start square will be empty: we can set its piece value to 1
+     index_piece[target_index] = piece #Update target Index to the piece at start_index
+
+     #remake the FEN. First loop gives a row with value like [1, 1, 'N', 1, 'R', 1, 1, 1]. We remake this into [2,'N', 3]
+     FEN = []
+     for i in range(0, 64, 8):
+          row = list(index_piece.values())[i:i+8]
+          fenRow = []
+          count = 0
+
+          for i in row:
+               if i == 1:
+                    count += 1
+               else:
+                    if count > 0:
+                         fenRow.append(count)
+                         count = 0
+                    fenRow.append(i)
+          
+          if count > 0: #Incase all elements are 1
+               fenRow.append(count)
+
+          FEN.append((fenRow))
+
+     FEN.reverse()
+     #FEN will look something like [[3, 'R', 1, 'N', 2], [5, 'k', 2]....
+     #now we jjust group each element
+
+     FENstring = ''
+     for i in FEN:
+          for j in i:
+               FENstring += str(j)
+          FENstring += '/'
+     FENstring= FENstring[:-1]
+
+     return FENstring

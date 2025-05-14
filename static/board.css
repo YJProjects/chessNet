@@ -12,18 +12,24 @@ body {
     margin-top: 10%;
 }
 
+.square.highlighted{
+    background-color: green;
+}
+
+
 .square {
     height: 70px;
     width: 70px;
     display: flex;
+    flex-shrink: 0;
     padding-bottom: 2px;
 }
 
-.square.light {
+.light {
     background-color: #ffd599;
 }
 
-.square.dark {
+.dark {
     background-color: #b16e41;
 }
 
