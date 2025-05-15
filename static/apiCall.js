@@ -12,14 +12,12 @@ export async function getMoves(piece, FEN) {
 
     const data = await response.json();
     const moves = data['moves']
-
-    console.log(data)
+    console.log(moves)
     return moves
 }
 
 export async function updateFen(startIndex, targetIndex, FEN) {
     const post_data = {'start_index' : startIndex, 'target_index' : targetIndex, 'FEN' : FEN}
-    console.log(post_data)
 
     const response = await fetch("http://127.0.0.1:5000/update_fen", {
         method: "POST",

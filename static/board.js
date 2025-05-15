@@ -101,15 +101,17 @@ function squarePress(square) {
     isSquareHighlighted = true
   }
 
+  const startTime = performance.now();
+
   if (!isBoardHighlighted && isPiece) {
     getMoves(square, FEN).then(moves => highlight(moves))
     prevPiece = square
+    const endTime = performance.now();
   }
-  else if (isBoardHighlighted && isPiece){
+  else if (isBoardHighlighted && isPiece && !isSquareHighlighted){
     removeAllHightlights()
     getMoves(square, FEN).then(moves => highlight(moves))
     prevPiece = square
-    console.log("RUN")
   }
   else if (isSquareHighlighted) {
     removeAllHightlights()
@@ -119,11 +121,15 @@ function squarePress(square) {
     
     updateFen(startIndex, targetIndex, FEN).then(newFEN => {setBoard(newFEN), FEN = newFEN})
     prevPiece = null
-    console.log('run')
   }
   else{
     removeAllHightlights()
     prevPiece = null
+  }
+  const endTime = performance.now();
+
+  if ((!isBoardHighlighted && isPiece) | (isBoardHighlighted && isPiece && !isSquareHighlighted)) {
+    console.log("Time taken from api_call: ", endTime - startTime)
   }
 
 }
