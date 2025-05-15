@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
-from legal_moves import legal_moves
-from update_fen import update_FEN
+from scripts.get_legal_moves import legal_moves
+from scripts.update_fen import update_FEN
 from flask_session import Session
 import time
 

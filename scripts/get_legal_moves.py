@@ -1,4 +1,5 @@
-from BitBoard import Pawn, Rook
+from scripts.boards.pawn import Pawn
+from scripts.boards.rook import Rook
 
 def get_piece_type(FEN, index): #return piece type independent of colour
         piece_data = FEN.split()[0]
