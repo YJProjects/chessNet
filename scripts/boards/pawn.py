@@ -1,4 +1,4 @@
-from Bitboard import BitBoard
+from scripts.boards.bitboard import BitBoard
 
 class Pawn(BitBoard):
     def __init__(self, FEN, piece_index):

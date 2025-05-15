@@ -3,6 +3,7 @@ from flask import request
 from scripts.get_legal_moves import legal_moves
 from scripts.update_fen import update_FEN
 from flask_session import Session
+import redis
 import time
 
 import json
@@ -10,7 +11,7 @@ import json
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True #reloads server if changes are made to html css or js
 app.config['SECRET_KEY'] = 'dev'
-SESSION_TYPE = 'redis'
+app.config['SESSION_TYPE'] = 'redis'
 app.config.from_object(__name__)
 Session(app)
 
