@@ -1,5 +1,9 @@
 from scripts.boards.pawn import Pawn
 from scripts.boards.rook import Rook
+from scripts.boards.bishop import Bishop
+from scripts.boards.queen import Queen
+
+
 
 def get_piece_type(FEN, index): #return piece type independent of colour
         piece_data = FEN.split()[0]
@@ -24,5 +28,11 @@ def legal_moves(FEN, piece_index):
         return piece.legal_moves()
     elif piece_type == 'r':
         piece = Rook(FEN, piece_index)
+        return piece.legal_moves()
+    elif piece_type == 'b':
+        piece = Bishop(FEN, piece_index)
+        return piece.legal_moves()
+    elif piece_type == 'q':
+        piece = Queen(FEN, piece_index)
         return piece.legal_moves()
     return "Invalid piece"

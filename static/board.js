@@ -50,7 +50,8 @@ function setBoard(fenString) {
   }
 }
 let chessboard = document.getElementById("chessBoard");
-const gameStartFen = "8/3p3p/2p2RPP/8/1K4p1/1pP1prP1/2k5/2N1R3 w - - 0 1"
+const gameStartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 let FEN = gameStartFen
 //Add alternating empty light and dark squares
 for (let row = 7; row >= 0; row--){ //Starting with A8 -> H8 then A7 -> H7 .... A1 -> H1;

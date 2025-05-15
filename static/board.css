@@ -13,9 +13,9 @@ body {
 }
 
 .square.highlighted{
-    background-color: green;
-}
+    border-radius: 50%;
 
+}
 
 .square {
     height: 70px;
