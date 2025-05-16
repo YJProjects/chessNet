@@ -1,8 +1,9 @@
 def update_FEN(FEN, start_index, target_index): #return piece type independent of colour
+     print(FEN)
      index_piece = {}
      #for easy representation we'll convert fen to a index : piece Hashmap, manipulate the hashmap and convert it back into FEN
      index = 0
-     Fenpieces = FEN.split(" ")[0]
+     Fenpieces, active_color, castling_rights, en_passant_targets, half_move_clock, full_move_number = FEN.split(" ")
      FENrows = Fenpieces.split("/")[::-1] #Reverse FEN so we start from index 0
      for row in FENrows:
           for s in row:
@@ -48,6 +49,16 @@ def update_FEN(FEN, start_index, target_index): #return piece type independent o
           for j in i:
                FENstring += str(j)
           FENstring += '/'
-     FENstring= FENstring[:-1]
+     FENpieces= FENstring[:-1]
 
-     return FENstring
+     if piece.islower(): 
+          full_move_number = str(int(full_move_number) + 1)
+          active_color = 'w'
+     else:
+          active_color = 'b'
+
+     FEN = FENpieces + " " + active_color + " " + castling_rights + " " + en_passant_targets + " " + half_move_clock + " " + full_move_number
+     print("new_fen" , FEN)
+
+
+     return FEN

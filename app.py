@@ -27,13 +27,13 @@ def render_default():
 
 @app.route("/generate_moves", methods = ["POST"])
 def moves():
-    
+    start = time.perf_counter()
     data = request.get_json()
 
     FEN = data['FEN']
     piece_index = int(data["piece_index"])
 
-    start = time.perf_counter()
+    
 
     moves_indexes = legal_moves(FEN, piece_index)
 
@@ -47,6 +47,7 @@ def moves():
 
 @app.route("/update_fen", methods = ["POST"])
 def newFen():
+    start = time.perf_counter()
     data = request.get_json()
 
     FEN = data['FEN']
@@ -55,7 +56,10 @@ def newFen():
 
     updated_FEN = update_FEN(FEN, start_index, target_index)
 
+    end = time.perf_counter()
+    print("Time Taken to generate new FEN:", round(end-start, 5), 'seconds')
+
     return json.dumps({'FEN' : updated_FEN})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000, debug=True)

@@ -17,7 +17,7 @@ def get_piece_type(FEN, index): #return piece type independent of colour
             current_index = (7-row_count) * 8
             for piece in row:
                 if current_index == index:
-                     return piece.lower()
+                     return piece
                 elif piece.isdigit():
                     current_index += int(piece)
                 else:
@@ -25,8 +25,7 @@ def get_piece_type(FEN, index): #return piece type independent of colour
                 
         return None
 
-def legal_moves(FEN, piece_index):
-    piece_type = get_piece_type(FEN, piece_index)
+def get_moves(FEN, piece_index, piece_type):
     if piece_type == 'p':
         piece = Pawn(FEN, piece_index)
         return piece.legal_moves()
@@ -46,3 +45,14 @@ def legal_moves(FEN, piece_index):
         piece = King(FEN, piece_index)
         return piece.legal_moves()
     return "Invalid piece"
+
+def legal_moves(FEN, piece_index):
+    piece_type = get_piece_type(FEN, piece_index)
+
+    if FEN.split(" ")[1] == 'w' and piece_type.islower():
+        return []
+    if FEN.split(" ")[1] == 'b' and piece_type.isupper():
+        return []
+
+    moves = get_moves(FEN, piece_index, piece_type.lower())
+    return moves
