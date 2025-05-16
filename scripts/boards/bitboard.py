@@ -6,24 +6,10 @@ class BitBoard():
         self.FEN = FEN
         self.piece_index = piece_index
         self.piece_type = self.get_piece_type_from_index(piece_index)
-        
-        self.r = self.create_bitboard_from_piece_type('R')
-        self.n = self.create_bitboard_from_piece_type('N')
-        self.b = self.create_bitboard_from_piece_type('B')
-        self.q = self.create_bitboard_from_piece_type('Q')
-        self.k = self.create_bitboard_from_piece_type('K')
-        self.p = self.create_bitboard_from_piece_type('P')
 
-        self.white = self.r | self.n | self.b | self.q | self.k | self.p
+        self.white = self.create_bitboard_from_piece_types(['P', 'Q', 'K', 'N', 'R', "B"])
 
-        self.R = self.create_bitboard_from_piece_type('r')
-        self.N = self.create_bitboard_from_piece_type('n')
-        self.B = self.create_bitboard_from_piece_type('b')
-        self.Q = self.create_bitboard_from_piece_type('q')
-        self.K = self.create_bitboard_from_piece_type('k')
-        self.P = self.create_bitboard_from_piece_type('p')
-
-        self.black = self.R | self.N | self.B | self.Q | self.K | self.P
+        self.black = self.create_bitboard_from_piece_types(['p', 'q', 'k', 'n', 'r', 'b'])
 
         self.board = self.black | self.white
         self.empty = self.flip_bitboard(self.board)
@@ -65,6 +51,24 @@ class BitBoard():
                      current_index += 1
                 
     
+        return bitboard
+    
+    def create_bitboard_from_piece_types(self, piece_types : list):
+        bitboard = 0
+        piece_data = self.FEN.split()[0]
+        rows = piece_data.split('/')
+        
+        for row_count, row in enumerate(rows):
+            current_index = (7-row_count) * 8
+            for piece in row:
+                if piece in piece_types:
+                    bitboard = self.set_bit(bitboard, current_index)
+                    current_index += 1
+                elif piece.isdigit():
+                    current_index += int(piece)
+                else:
+                     current_index += 1
+
         return bitboard
 
     def create_bitboard_from_indexes(self, indexes : list[int]) -> int:

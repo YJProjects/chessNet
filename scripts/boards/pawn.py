@@ -38,5 +38,9 @@ class Pawn(BitBoard):
 
         legal_moves = legal_pushes | legal_attacks
 
-        return self.get_indexes_from_bitboard(legal_moves)
+        en_passant = []
+        if self.FEN.split(" ")[3] != '-':
+            en_passant.append(self.FEN.split(" ")[3])
+
+        return self.get_indexes_from_bitboard(legal_moves) + en_passant
     

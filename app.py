@@ -6,6 +6,8 @@ from flask_session import Session
 import redis
 import time
 from flask_cors import CORS
+from flask_caching import Cache
+
 
 import json
 
@@ -16,6 +18,9 @@ app.config['SECRET_KEY'] = 'dev'
 app.config['SESSION_TYPE'] = 'redis'
 app.config.from_object(__name__)
 Session(app)
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
+
 
 CORS(app, supports_credentials=True, origins=["http://127.0.0.1:8000"])
 
