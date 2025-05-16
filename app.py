@@ -5,16 +5,19 @@ from scripts.update_fen import update_FEN
 from flask_session import Session
 import redis
 import time
+from flask_cors import CORS
 
 import json
 
 app = Flask(__name__)
+CORS(app)
 app.config["TEMPLATES_AUTO_RELOAD"] = True #reloads server if changes are made to html css or js
 app.config['SECRET_KEY'] = 'dev'
 app.config['SESSION_TYPE'] = 'redis'
 app.config.from_object(__name__)
 Session(app)
 
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:8000"])
 
 from flask import render_template
 
