@@ -2,6 +2,10 @@ from scripts.boards.pawn import Pawn
 from scripts.boards.rook import Rook
 from scripts.boards.bishop import Bishop
 from scripts.boards.queen import Queen
+from scripts.boards.knight import Knight
+from scripts.boards.king import King
+
+
 
 
 
@@ -34,5 +38,11 @@ def legal_moves(FEN, piece_index):
         return piece.legal_moves()
     elif piece_type == 'q':
         piece = Queen(FEN, piece_index)
+        return piece.legal_moves()
+    elif piece_type == 'n':
+        piece = Knight(FEN, piece_index)
+        return piece.legal_moves()
+    elif piece_type == 'k':
+        piece = King(FEN, piece_index)
         return piece.legal_moves()
     return "Invalid piece"
