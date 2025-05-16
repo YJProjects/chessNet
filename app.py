@@ -56,3 +56,6 @@ def newFen():
     updated_FEN = update_FEN(FEN, start_index, target_index)
 
     return json.dumps({'FEN' : updated_FEN})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
