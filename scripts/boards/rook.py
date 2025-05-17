@@ -141,6 +141,7 @@ class Rook(BitBoard):
     
     def legal_moves(self):
         mask = self.get_mask(self.piece_index)
+        
         blocker_pattern = self.board & self.create_bitboard_from_indexes(mask)
         magic = self.magic_numbers[self.piece_index]
         relevant_bits = len(mask)

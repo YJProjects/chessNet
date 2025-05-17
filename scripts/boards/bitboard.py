@@ -12,6 +12,7 @@ class BitBoard():
         self.black = self.create_bitboard_from_piece_types(['p', 'q', 'k', 'n', 'r', 'b'])
 
         self.board = self.black | self.white
+        
         self.empty = self.flip_bitboard(self.board)
 
 
