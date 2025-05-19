@@ -1,0 +1,43 @@
+body {
+    background-color: bisque;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#chessboard {
+    border-radius: 5px;
+    border: 1px solid black;
+    overflow: hidden;
+    display: inline-block;
+    margin-inline: auto;
+}
+
+div[index] {
+    height: 90px;
+    width: 90px;
+    display: flex;
+}
+
+div[row] {
+    display: flex;
+}
+
+div[color = black] {
+    background-color: #8a2421;
+}
+
+div[color = white] {
+    background-color: #c96865;
+}
+
+div[color][highlighted = True]{
+    background-color: rgba(168, 250, 16, 0.779);
+}
+
+.pieceImage{
+    height: 90px;
+    width: 90px;
+    margin-left: 1px;
+}
