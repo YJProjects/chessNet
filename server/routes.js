@@ -25,5 +25,5 @@ router.post("/updateBoard", (req, res) => {
             'isCheckMate' : newBoard.isCheckMate()
         }
     ))
-    })
+})
 module.exports = router
