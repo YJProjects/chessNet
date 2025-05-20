@@ -69,6 +69,7 @@ function initGame() {
     createBoard()
     const start = performance.now();
     const currentURL = window.location.href;
+    console.log(currentURL + "api/init")
 
     fetch(currentURL + "api/init", {
         method: "POST",
