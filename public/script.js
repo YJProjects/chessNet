@@ -147,7 +147,8 @@ function squarePressed(square) {
             console.log(data)
 
             setBoard(data['Board']);
-            if (data['isCheckMate']) console.log("CHECKMATE")
+            const checkMateDiv = document.getElementById("checkmate")
+            if (data['isCheckMate']) {checkMateDiv.textContent = "CHECKMATE"}
         })
         .catch((error) => console.error("Error:", error));
     }
@@ -167,7 +168,6 @@ function removeAllHighlights() {
 //remake board with different piece style of value change
 const pieceStyleDropDown = document.getElementById('pieceStyleDropDown')
 pieceStyleDropDown.addEventListener("change", () => {
-        console.log("HI")
         setBoard(currentBoard)
     }
 )

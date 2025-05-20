@@ -44,8 +44,12 @@ class Board {
 
         this.EnPassantIndex = null
         this.EnPassantPieceCaptureIndex = null //This index of the piece which will be captured whne we enpassant
-        
 
+        this.canWhiteKingSideCastle = true
+        this.canBlackKingSideCastle = true
+        this.canWhiteQueenSideCastle = true
+        this.canBlackQueenSideCastle = true
+        
         this.squares = {}
         this.initBoard()
 
@@ -151,7 +155,58 @@ class Board {
             this.EnPassantIndex  = false
             this.EnPassantPieceCaptureIndex = null
         }
+
         this.squares[to].piece = startPiece
+
+        //check for pawn promotion
+        const newSquare = this.getSquare(to)
+        if (newSquare.piece.type == "Pawn" && (56 <= to && to <= 63) && newSquare.piece.color == "White") { //Piece is a pawn, is white color and in the last row
+            this.squares[to].piece = new Piece("Queen", "White", to)
+        }
+        if (newSquare.piece.type == "Pawn" && (0 <= to && to <= 7) && newSquare.piece.color == "Black") { //Piece is a pawn, is white color and in the last row
+            this.squares[to].piece = new Piece("Queen", "Black", to)
+        } 
+
+        //check if move was a castle
+        if (from = 4 && to == 6 && startPiece.type == "King") {//king moves from 4 to 6
+            this.squares[5].piece = this.squares[7].piece
+            this.squares[7].piece = null
+        }
+        if (from = 4 && to == 2 && startPiece.type == "King") {
+            this.squares[3].piece = this.squares[0].piece
+            this.squares[0].piece = null
+        }
+        if (from = 60 && to == 58 && startPiece.type == "King") {
+            this.squares[5].piece = this.squares[7].piece
+            this.squares[7].piece = null
+        }
+        if (from = 60 && to == 62 && startPiece.type == "King") {
+            this.squares[59].piece = this.squares[56].piece
+            this.squares[56].piece = null
+        }
+        
+        
+        //check if castle rights have been removes
+        if (!this.getSquare(4).piece || this.getSquare(4).piece.type != "King") {
+            this.canWhiteKingSideCastle = false
+            this.canWhiteQueenSideCastle = false
+        }
+        if (!this.getSquare(7).piece || this.getSquare(7).piece.type != "Rook" || this.getSquare(7).piece.color != "White") {
+            this.canWhiteKingSideCastle = false
+        }
+        if (!this.getSquare(0).piece ||  this.getSquare(0).piece.type != "Rook" || this.getSquare(0).piece.color != "White") {
+            this.canWhiteQueenSideCastle = false
+        }
+        if (!this.getSquare(60).piece || this.getSquare(60).piece.type != "King") {
+            this.canBlackKingSideCastle = false
+            this.canBlackQueenSideCastle = false
+        }
+        if (!this.getSquare(63).piece || this.getSquare(63).piece.type != "Rook" || this.getSquare(63).piece.color != "Black") {
+            this.canBlackKingSideCastle = false
+        }
+        if (!this.getSquare(56).piece ||  this.getSquare(56).piece.type != "Rook" || this.getSquare(56).piece.color != "Black") {
+            this.canBlackQueenSideCastle = false
+        }
 
         
         this.Board = this.getSquareIndexToPiece() //remake the board
@@ -205,6 +260,7 @@ class Board {
         });
         
     }
+
 
     isKingInCheck() {
         let kingIndex = null
@@ -266,6 +322,8 @@ class Board {
     randomMove() {
         const indexToMoves = this.getAllAvailibleMoves()
 
+        if (Object.keys(indexToMoves).length === 0) {return null}
+
         const pieces = Object.keys(indexToMoves)
         const randomPieceIndex = Math.floor(Math.random() * pieces.length)
         const randomPiece = pieces[randomPieceIndex]
@@ -279,6 +337,8 @@ class Board {
 
     genAIMove() {
         const moveGen =  this.randomMove()
+
+        if (!moveGen) {return}
         const from = moveGen[0]
         const to = moveGen[1]
 
