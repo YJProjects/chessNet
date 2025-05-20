@@ -1,4 +1,4 @@
-const { genMoves, getPsuedoMoves } = require("./moves");
+const {legalMoves, getPsuedoMoves, getPieceMoves} = require("./moves");
 
 class Piece {
     constructor(type, color, index) {
@@ -42,10 +42,14 @@ class Board {
         this.colors = ['Black', 'White']
         this.colorSwap = {'White' : 'Black', 'Black' : 'White'}
 
-        this.EnPassantIndex = false
-        this.EnPassantPieceCaptureIndex = false //This index of the piece which will be captured whne we enpassant
-        
+        this.EnPassantIndex = null
+        this.EnPassantPieceCaptureIndex = null //This index of the piece which will be captured whne we enpassant
 
+        this.canWhiteKingSideCastle = true
+        this.canBlackKingSideCastle = true
+        this.canWhiteQueenSideCastle = true
+        this.canBlackQueenSideCastle = true
+        
         this.squares = {}
         this.initBoard()
 
@@ -138,7 +142,10 @@ class Board {
         return squareIndexToPiece
     }
 
-    movePiece(from, to) {
+    movePiece(from, to, callAIMove = false) {
+        if (from < 0 || from > 63 || to < 0 || to > 63) {
+            throw new Error(`Illegal board index: from=${from}, to=${to}`);
+        }
         this.setEnPassant(from, to)
         //move the piece on the board
         const startPiece = this.squares[from].piece
@@ -148,11 +155,66 @@ class Board {
             this.EnPassantIndex  = false
             this.EnPassantPieceCaptureIndex = null
         }
+
         this.squares[to].piece = startPiece
+
+        //check for pawn promotion
+        const newSquare = this.getSquare(to)
+        if (newSquare.piece.type == "Pawn" && (56 <= to && to <= 63) && newSquare.piece.color == "White") { //Piece is a pawn, is white color and in the last row
+            this.squares[to].piece = new Piece("Queen", "White", to)
+        }
+        if (newSquare.piece.type == "Pawn" && (0 <= to && to <= 7) && newSquare.piece.color == "Black") { //Piece is a pawn, is white color and in the last row
+            this.squares[to].piece = new Piece("Queen", "Black", to)
+        } 
+
+        //check if move was a castle
+        if (from = 4 && to == 6 && startPiece.type == "King") {//king moves from 4 to 6
+            this.squares[5].piece = this.squares[7].piece
+            this.squares[7].piece = null
+        }
+        if (from = 4 && to == 2 && startPiece.type == "King") {
+            this.squares[3].piece = this.squares[0].piece
+            this.squares[0].piece = null
+        }
+        if (from = 60 && to == 58 && startPiece.type == "King") {
+            this.squares[5].piece = this.squares[7].piece
+            this.squares[7].piece = null
+        }
+        if (from = 60 && to == 62 && startPiece.type == "King") {
+            this.squares[59].piece = this.squares[56].piece
+            this.squares[56].piece = null
+        }
+        
+        
+        //check if castle rights have been removes
+        if (!this.getSquare(4).piece || this.getSquare(4).piece.type != "King") {
+            this.canWhiteKingSideCastle = false
+            this.canWhiteQueenSideCastle = false
+        }
+        if (!this.getSquare(7).piece || this.getSquare(7).piece.type != "Rook" || this.getSquare(7).piece.color != "White") {
+            this.canWhiteKingSideCastle = false
+        }
+        if (!this.getSquare(0).piece ||  this.getSquare(0).piece.type != "Rook" || this.getSquare(0).piece.color != "White") {
+            this.canWhiteQueenSideCastle = false
+        }
+        if (!this.getSquare(60).piece || this.getSquare(60).piece.type != "King") {
+            this.canBlackKingSideCastle = false
+            this.canBlackQueenSideCastle = false
+        }
+        if (!this.getSquare(63).piece || this.getSquare(63).piece.type != "Rook" || this.getSquare(63).piece.color != "Black") {
+            this.canBlackKingSideCastle = false
+        }
+        if (!this.getSquare(56).piece ||  this.getSquare(56).piece.type != "Rook" || this.getSquare(56).piece.color != "Black") {
+            this.canBlackQueenSideCastle = false
+        }
 
         
         this.Board = this.getSquareIndexToPiece() //remake the board
         this.color = this.colorSwap[this.color] //change color
+
+        if (callAIMove) {
+            this.genAIMove()
+        }
     }
 
     testMovePiece(from, to) {
@@ -167,8 +229,8 @@ class Board {
     revertState(oldState) {
         this.type = oldState.type;
         this.color = oldState.color;
-        this.EnPassantIndex = oldState.false
-        this.EnPassantPieceCaptureIndex = oldState.false 
+        this.EnPassantIndex = oldState.EnPassantIndex
+        this.EnPassantPieceCaptureIndex = oldState.EnPassantPieceCaptureIndex
         this.color = oldState.color;
         this.Board = oldState.Board;
     }
@@ -178,7 +240,7 @@ class Board {
         const enPassantPush = {'White' : 8, 'Black' : -8}
         const square = this.getSquare(from)
 
-        if (!square.piece.type == 'Pawn') {return} //piece must be a pawn
+        if (!(square.piece.type == 'Pawn')) {return} //piece must be a pawn
         if (!(Math.abs(from - to) == 16)) {return} //row different must be 16
         if (!(enPassantRange[square.piece.color][0] <= from && from <= enPassantRange[square.piece.color][1])) {return} //piece must be in correct row
         
@@ -191,13 +253,14 @@ class Board {
             if (!element.piece) {return}
             if (!element.piece.type) {return}
             if (element.piece.type == "Pawn" && element.piece.color != square.piece.color) {
-                this.EnPassant = to + enPassantPush[element.piece.color];
+                this.EnPassantIndex = to + enPassantPush[element.piece.color];
                 this.EnPassantPieceCaptureIndex = to
                 return
             }
         });
         
     }
+
 
     isKingInCheck() {
         let kingIndex = null
@@ -228,7 +291,7 @@ class Board {
         for (let i = 0; i<=63 ; i++) {
             const square = this.getSquare(i)
             if (square.containsPiece() && square.piece.color == this.color) {
-                const newMoves = genMoves(this, i)
+                const newMoves = getPieceMoves(this, i)
                 moves = moves.concat(newMoves)
             }
         }
@@ -239,6 +302,47 @@ class Board {
         else {
             return false
         }
+    }
+
+    //Code for AI
+
+    getAllAvailibleMoves() {
+        let indexToMoves = {}
+        for (let i = 0; i <= 63; i++) {
+            const square = this.getSquare(i)
+            if (square.containsPiece() && square.piece.color == this.color) { 
+                const moves = getPieceMoves(this, i)
+                if (moves.length > 0) {indexToMoves[i] = moves}
+            }
+        }
+
+        return indexToMoves
+    }
+
+    randomMove() {
+        const indexToMoves = this.getAllAvailibleMoves()
+
+        if (Object.keys(indexToMoves).length === 0) {return null}
+
+        const pieces = Object.keys(indexToMoves)
+        const randomPieceIndex = Math.floor(Math.random() * pieces.length)
+        const randomPiece = pieces[randomPieceIndex]
+
+        const moves = indexToMoves[randomPiece]
+        const randomMoveIndex = Math.floor(Math.random() * moves.length)
+        const randomMove = moves[randomMoveIndex]
+
+        return [randomPiece, randomMove]
+    }
+
+    genAIMove() {
+        const moveGen =  this.randomMove()
+
+        if (!moveGen) {return}
+        const from = moveGen[0]
+        const to = moveGen[1]
+
+        this.movePiece(from, to)
     }
 
 }

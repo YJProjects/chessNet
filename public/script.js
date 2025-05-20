@@ -1,6 +1,8 @@
 prevSquare = null
+let currentBoard = null
 const currentURL = "https://chessweb-98le.onrender.com/"
 //const currentURL = "http://localhost:8080/"
+
 function createBoard() {
 
     const columnName = {
@@ -51,19 +53,23 @@ function resetBoard() {
 }
 
 function setBoard(board) {
+    currentBoard = board
     resetBoard()
     for (let index = 0; index <= 63; index ++){
         const piece = board[index]
+
+        const pieceStyleDropDown = document.getElementById('pieceStyleDropDown')
+        const pieceStylePath = pieceStyleDropDown.value
+
         if (piece) {
             const square = document.querySelector(`[index="${index}"]`);
             const img = document.createElement('img');
-            img.src = `pieceImages/${piece}.png`;
+            img.src = `pieceImages/${pieceStylePath}/${piece}.png`;
             img.classList.add("pieceImage");
             square.appendChild(img);
         }
     }
 }
-
 
 function initGame() {
 
@@ -143,7 +149,8 @@ function squarePressed(square) {
             console.log(data)
 
             setBoard(data['Board']);
-            if (data['isCheckMate']) console.log("CHECKMATE")
+            const checkMateDiv = document.getElementById("checkmate")
+            if (data['isCheckMate']) {checkMateDiv.textContent = "CHECKMATE"}
         })
         .catch((error) => console.error("Error:", error));
     }
@@ -159,3 +166,10 @@ function removeAllHighlights() {
     const squares = document.querySelectorAll(`[highlighted="True"]`)
     if (squares) {squares.forEach((square) => square.setAttribute('highlighted', 'False'))}
 }
+
+//remake board with different piece style of value change
+const pieceStyleDropDown = document.getElementById('pieceStyleDropDown')
+pieceStyleDropDown.addEventListener("change", () => {
+        setBoard(currentBoard)
+    }
+)

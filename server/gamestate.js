@@ -1,5 +1,5 @@
 const Board = require("./board")
-const {genMoves} = require("./moves")
+const {legalMoves} = require("./moves")
 
 let gameBoard = null
 
@@ -10,12 +10,11 @@ function createBoard() {
 }
 
 function getMoves(index) {
-    return genMoves(gameBoard, index)
+    return legalMoves(gameBoard, index)
 }
 
 function updateBoard(from, to) {
-
-    gameBoard.movePiece(from, to)
+    gameBoard.movePiece(from, to, callAIMove = true )
     return gameBoard
 }
 

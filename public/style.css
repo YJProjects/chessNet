@@ -1,6 +1,7 @@
 body {
     background-color: bisque;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -17,12 +18,11 @@ body {
 div[index] {
     height: 90px;
     width: 90px;
-    display: flex;
 }
 
 div[row] {
     display: flex;
-}
+} 
 
 div[color = black] {
     background-color: #8a2421;

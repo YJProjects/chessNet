@@ -1,3 +1,4 @@
+
 function pawnMoves(Board, index){
     let moves = []
 
@@ -88,6 +89,45 @@ function kingMoves(Board, index) {
         moves.push(newIndex)
     })
 
+    //castle checks
+    if (Board.canWhiteKingSideCastle && square.piece.color == 'White') { //Check if a white king can queen side castle
+        const F1Square = Board.getSquare(5)
+        const G1Square = Board.getSquare(6)
+
+        if (!F1Square.containsPiece() && !G1Square.containsPiece()) { // Both squares are empty
+            moves.push(6)
+        }
+    }
+
+    if (Board.canWhiteQueenSideCastle && square.piece.color == 'White') { //Check if a white king can queen side castle
+        const B1Square = Board.getSquare(1)
+        const C1Square = Board.getSquare(2)
+        const D1Square = Board.getSquare(3)
+
+        if (!B1Square.containsPiece() && !C1Square.containsPiece() && !D1Square.containsPiece()) { // Both squares are empty
+            moves.push(2)
+        }
+    }
+
+    if (Board.canBlackKingSideCastle && square.piece.color == 'Black') { //Check if a white king can queen side castle
+        const F8Square = Board.getSquare(61)
+        const G8Square = Board.getSquare(62)
+
+        if (!F8Square.containsPiece() && !G8Square.containsPiece()) { // Both squares are empty
+            moves.push(62)
+        }
+    }
+
+    if (Board.canBlackQueenSideCastle && square.piece.color == 'Black') { //Check if a white king can queen side castle
+        const B8Square = Board.getSquare(57)
+        const C8Square = Board.getSquare(58)
+        const D8Square = Board.getSquare(58)
+
+        if (!B8Square.containsPiece() && !C8Square.containsPiece() && !D8Square.containsPiece()) { // Both squares are empty
+            moves.push(58)
+        }
+    }
+
     return moves
 }
 
@@ -144,6 +184,7 @@ function rookMoves(Board, index) {
         moves.push(indexCopy)
         indexCopy -= 8
     }
+
 
     return moves
 }
@@ -209,7 +250,6 @@ function queenMoves(Board, index) {
 function getPsuedoMoves(Board, index){
     const piece = Board.getSquare(index).piece
 
-
     if (piece.type == 'Pawn') {
         return pawnMoves(Board, Number(index))
     }
@@ -230,17 +270,9 @@ function getPsuedoMoves(Board, index){
     }
 }
 
-function genMoves(Board, index) {
-    const piece = Board.getSquare(index).piece
-    if (Board.color != piece.color) return []
+function filterMoves(Board, psuedoMoves, index) {
 
     let moves = []
-
-    const psuedoMoves = getPsuedoMoves(Board, index)
-
-    if (psuedoMoves.length <= 0) {return []}
-
-    if (!Board.isKingInCheck()) {return psuedoMoves}
 
     psuedoMoves.forEach((move) => {
         const newBoard = Board.testMovePiece(index, move)
@@ -249,7 +281,28 @@ function genMoves(Board, index) {
         moves.push(move)
     })
     return moves
-    
 }
 
-module.exports = {genMoves, getPsuedoMoves}
+function getPieceMoves(Board, index) {
+    const piece = Board.getSquare(index).piece
+
+    if (Board.color != piece.color) return []
+    const psuedoMoves = getPsuedoMoves(Board, index)
+    const moves = filterMoves(Board, psuedoMoves, index)
+    return moves
+}
+
+function legalMoves(Board, index) {
+    
+    let moves = []
+    if (Board.color == "White") {
+        moves = getPieceMoves(Board, index)
+    }
+    else {
+        moves = []
+    }
+    return moves
+}
+
+
+module.exports = {legalMoves, getPsuedoMoves, getPieceMoves}
