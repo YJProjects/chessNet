@@ -1,3 +1,4 @@
+
 function pawnMoves(Board, index){
     let moves = []
 
@@ -209,7 +210,6 @@ function queenMoves(Board, index) {
 function getPsuedoMoves(Board, index){
     const piece = Board.getSquare(index).piece
 
-
     if (piece.type == 'Pawn') {
         return pawnMoves(Board, Number(index))
     }
@@ -230,17 +230,9 @@ function getPsuedoMoves(Board, index){
     }
 }
 
-function genMoves(Board, index) {
-    const piece = Board.getSquare(index).piece
-    if (Board.color != piece.color) return []
+function filterMoves(Board, psuedoMoves, index) {
 
     let moves = []
-
-    const psuedoMoves = getPsuedoMoves(Board, index)
-
-    if (psuedoMoves.length <= 0) {return []}
-
-    if (!Board.isKingInCheck()) {return psuedoMoves}
 
     psuedoMoves.forEach((move) => {
         const newBoard = Board.testMovePiece(index, move)
@@ -249,7 +241,28 @@ function genMoves(Board, index) {
         moves.push(move)
     })
     return moves
-    
 }
 
-module.exports = {genMoves, getPsuedoMoves}
+function getPieceMoves(Board, index) {
+    const piece = Board.getSquare(index).piece
+
+    if (Board.color != piece.color) return []
+    const psuedoMoves = getPsuedoMoves(Board, index)
+    const moves = filterMoves(Board, psuedoMoves, index)
+    return moves
+}
+
+function legalMoves(Board, index) {
+    
+    let moves = []
+    if (Board.color == "White") {
+        moves = getPieceMoves(Board, index)
+    }
+    else {
+        moves = []
+    }
+    return moves
+}
+
+
+module.exports = {legalMoves, getPsuedoMoves, getPieceMoves}

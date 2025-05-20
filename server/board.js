@@ -1,4 +1,4 @@
-const { genMoves, getPsuedoMoves } = require("./moves");
+const {legalMoves, getPsuedoMoves, getPieceMoves} = require("./moves");
 
 class Piece {
     constructor(type, color, index) {
@@ -42,8 +42,8 @@ class Board {
         this.colors = ['Black', 'White']
         this.colorSwap = {'White' : 'Black', 'Black' : 'White'}
 
-        this.EnPassantIndex = false
-        this.EnPassantPieceCaptureIndex = false //This index of the piece which will be captured whne we enpassant
+        this.EnPassantIndex = null
+        this.EnPassantPieceCaptureIndex = null //This index of the piece which will be captured whne we enpassant
         
 
         this.squares = {}
@@ -138,7 +138,10 @@ class Board {
         return squareIndexToPiece
     }
 
-    movePiece(from, to) {
+    movePiece(from, to, callAIMove = false) {
+        if (from < 0 || from > 63 || to < 0 || to > 63) {
+            throw new Error(`Illegal board index: from=${from}, to=${to}`);
+        }
         this.setEnPassant(from, to)
         //move the piece on the board
         const startPiece = this.squares[from].piece
@@ -153,6 +156,10 @@ class Board {
         
         this.Board = this.getSquareIndexToPiece() //remake the board
         this.color = this.colorSwap[this.color] //change color
+
+        if (callAIMove) {
+            this.genAIMove()
+        }
     }
 
     testMovePiece(from, to) {
@@ -167,8 +174,8 @@ class Board {
     revertState(oldState) {
         this.type = oldState.type;
         this.color = oldState.color;
-        this.EnPassantIndex = oldState.false
-        this.EnPassantPieceCaptureIndex = oldState.false 
+        this.EnPassantIndex = oldState.EnPassantIndex
+        this.EnPassantPieceCaptureIndex = oldState.EnPassantPieceCaptureIndex
         this.color = oldState.color;
         this.Board = oldState.Board;
     }
@@ -178,7 +185,7 @@ class Board {
         const enPassantPush = {'White' : 8, 'Black' : -8}
         const square = this.getSquare(from)
 
-        if (!square.piece.type == 'Pawn') {return} //piece must be a pawn
+        if (!(square.piece.type == 'Pawn')) {return} //piece must be a pawn
         if (!(Math.abs(from - to) == 16)) {return} //row different must be 16
         if (!(enPassantRange[square.piece.color][0] <= from && from <= enPassantRange[square.piece.color][1])) {return} //piece must be in correct row
         
@@ -191,7 +198,7 @@ class Board {
             if (!element.piece) {return}
             if (!element.piece.type) {return}
             if (element.piece.type == "Pawn" && element.piece.color != square.piece.color) {
-                this.EnPassant = to + enPassantPush[element.piece.color];
+                this.EnPassantIndex = to + enPassantPush[element.piece.color];
                 this.EnPassantPieceCaptureIndex = to
                 return
             }
@@ -228,7 +235,7 @@ class Board {
         for (let i = 0; i<=63 ; i++) {
             const square = this.getSquare(i)
             if (square.containsPiece() && square.piece.color == this.color) {
-                const newMoves = genMoves(this, i)
+                const newMoves = getPieceMoves(this, i)
                 moves = moves.concat(newMoves)
             }
         }
@@ -239,6 +246,43 @@ class Board {
         else {
             return false
         }
+    }
+
+    //Code for AI
+
+    getAllAvailibleMoves() {
+        let indexToMoves = {}
+        for (let i = 0; i <= 63; i++) {
+            const square = this.getSquare(i)
+            if (square.containsPiece() && square.piece.color == this.color) { 
+                const moves = getPieceMoves(this, i)
+                if (moves.length > 0) {indexToMoves[i] = moves}
+            }
+        }
+
+        return indexToMoves
+    }
+
+    randomMove() {
+        const indexToMoves = this.getAllAvailibleMoves()
+
+        const pieces = Object.keys(indexToMoves)
+        const randomPieceIndex = Math.floor(Math.random() * pieces.length)
+        const randomPiece = pieces[randomPieceIndex]
+
+        const moves = indexToMoves[randomPiece]
+        const randomMoveIndex = Math.floor(Math.random() * moves.length)
+        const randomMove = moves[randomMoveIndex]
+
+        return [randomPiece, randomMove]
+    }
+
+    genAIMove() {
+        const moveGen =  this.randomMove()
+        const from = moveGen[0]
+        const to = moveGen[1]
+
+        this.movePiece(from, to)
     }
 
 }
