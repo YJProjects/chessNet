@@ -19,6 +19,11 @@ router.post("/updateBoard", (req, res) => {
     const from = Number(req.body['from'])
     const to = Number(req.body['to'])
     const newBoard = updateBoard(from, to)
-    res.send(JSON.stringify(newBoard))
-})
+    res.send(JSON.stringify(
+        {
+            'Board' : newBoard.Board,
+            'isCheckMate' : newBoard.isCheckMate()
+        }
+    ))
+    })
 module.exports = router

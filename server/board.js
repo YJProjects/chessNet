@@ -1,8 +1,9 @@
+const { genMoves, getPsuedoMoves } = require("./moves");
+
 class Piece {
     constructor(type, color, index) {
         this.type = type;
         this.color = color;
-        
     }
 }
 
@@ -19,7 +20,7 @@ class Square {
     }
 
     isOccupied() {
-        return (this.piece)? True : False;
+        return (this.piece)? true : false;
     }
 
     getRow(index) {
@@ -118,7 +119,7 @@ class Board {
     }
 
     getSquare(index) {
-        if (!(0 <= index <= 63)) {return null}
+        if (index < 0 || index > 63) return null;
         return this.squares[index]
     }
 
@@ -142,9 +143,9 @@ class Board {
         //move the piece on the board
         const startPiece = this.squares[from].piece
         this.squares[from].piece = null
-        if (to === this.EnPassant) {
+        if (to === this.EnPassantIndex) {
             this.squares[this.EnPassantPieceCaptureIndex].piece = null; 
-            this.EnPassant = false
+            this.EnPassantIndex  = false
             this.EnPassantPieceCaptureIndex = null
         }
         this.squares[to].piece = startPiece
@@ -157,6 +158,7 @@ class Board {
     testMovePiece(from, to) {
         const newBoard = this.clone()
         newBoard.movePiece(from, to)
+        newBoard.color = newBoard.colorSwap[newBoard.color]
         return newBoard
 
 
@@ -167,7 +169,8 @@ class Board {
         this.color = oldState.color;
         this.EnPassantIndex = oldState.false
         this.EnPassantPieceCaptureIndex = oldState.false 
-        this._savedState = oldState.null
+        this.color = oldState.color;
+        this.Board = oldState.Board;
     }
 
     setEnPassant(from, to) {
@@ -194,6 +197,48 @@ class Board {
             }
         });
         
+    }
+
+    isKingInCheck() {
+        let kingIndex = null
+        for (let index = 0; index<=63; index++) {
+            const square = this.squares[index]
+            if (square.containsPiece() && square.piece.type == "King" && square.piece.color == this.color) {
+                kingIndex = index
+                break
+            }
+        }
+        
+        let enemyTargetedSquares = []
+
+        for (let index = 0; index<=63; index++) {
+            const square = this.squares[index]
+            if (square.containsPiece() && square.piece.color != this.color) {
+                const enemyMoves = getPsuedoMoves(this, index)
+                enemyTargetedSquares = enemyTargetedSquares.concat(enemyMoves)
+            }
+        }
+
+        if (enemyTargetedSquares.includes(kingIndex)) {return true}
+        else {return false}
+    }
+
+    isCheckMate() {
+        let moves = []
+        for (let i = 0; i<=63 ; i++) {
+            const square = this.getSquare(i)
+            if (square.containsPiece() && square.piece.color == this.color) {
+                const newMoves = genMoves(this, i)
+                moves = moves.concat(newMoves)
+            }
+        }
+
+        if (moves.length == 0) {
+            return true
+        }
+        else {
+            return false
+        }
     }
 
 }

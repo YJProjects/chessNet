@@ -16,7 +16,7 @@ function getMoves(index) {
 function updateBoard(from, to) {
 
     gameBoard.movePiece(from, to)
-    return gameBoard.Board
+    return gameBoard
 }
 
 module.exports = {createBoard, getMoves, updateBoard}

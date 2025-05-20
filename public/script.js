@@ -139,7 +139,10 @@ function squarePressed(square) {
         .then((data) => {
             const end = performance.now(); 
             console.log(`API call time get new board: ${end - start} milliseconds`);
-            setBoard(data);            
+            console.log(data)
+
+            setBoard(data['Board']);
+            if (data['isCheckMate']) console.log("CHECKMATE")
         })
         .catch((error) => console.error("Error:", error));
     }

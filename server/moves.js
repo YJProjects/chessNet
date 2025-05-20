@@ -205,31 +205,8 @@ function queenMoves(Board, index) {
     return rook.concat(bishop)
 }
 
-function isKingInCheck(Board) {
-        let kingIndex = null
-        for (let index = 0; index<=63; index++) {
-            const square = Board.squares[index]
-            if (square.containsPiece() && square.piece.type == "King" && square.piece.color == Board.color) {
-                kingIndex = index
-                break
-            }
-        }
-        
-        let enemyTargetedSquares = []
 
-        for (let index = 0; index<=63; index++) {
-            const square = Board.squares[index]
-            if (square.containsPiece() && square.piece.color != Board.color) {
-                const enemyMoves = getPsuedoMoves(Board, index)
-                enemyTargetedSquares = enemyTargetedSquares.concat(enemyMoves)
-            }
-        }
-
-        if (enemyTargetedSquares.includes(kingIndex)) {return true}
-        else {return false}
-    }
 function getPsuedoMoves(Board, index){
-    console.log(Board)
     const piece = Board.getSquare(index).piece
 
 
@@ -263,11 +240,11 @@ function genMoves(Board, index) {
 
     if (psuedoMoves.length <= 0) {return []}
 
-    if (!isKingInCheck(Board)) {return psuedoMoves}
+    if (!Board.isKingInCheck()) {return psuedoMoves}
 
     psuedoMoves.forEach((move) => {
         const newBoard = Board.testMovePiece(index, move)
-        if (isKingInCheck(newBoard)) return
+        if (newBoard.isKingInCheck()) {return}
         
         moves.push(move)
     })
@@ -275,4 +252,4 @@ function genMoves(Board, index) {
     
 }
 
-module.exports = {genMoves}
+module.exports = {genMoves, getPsuedoMoves}
