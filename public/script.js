@@ -69,7 +69,7 @@ function initGame() {
     createBoard()
     const start = performance.now();
 
-    fetch("http://localhost:8080/api/init", {
+    fetch("https://chessweb-pi.vercel.app//api/init", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -103,7 +103,7 @@ function squarePressed(square) {
     if (square.children.length > 0 && !isSquareHighlighted) { //if div square has image its child length will be > 0
         const start = performance.now();
         const squareIndex = square.getAttribute('index');
-        fetch("http://localhost:8080/api/getMoves", {
+        fetch("https://chessweb-pi.vercel.app/api/getMoves", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -128,7 +128,7 @@ function squarePressed(square) {
         const start = performance.now();
         const prevSquareIndex = prevSquare.getAttribute('index')
         const newSquareIndex  = square.getAttribute('index')
-        fetch("http://localhost:8080/api/updateBoard", {
+        fetch("https://chessweb-pi.vercel.app/api/updateBoard", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
