@@ -1,5 +1,5 @@
 prevSquare = null
-const currentURL = window.location.href;
+const currentURL = "https://chessweb-98le.onrender.com/"
 
 function createBoard() {
 
