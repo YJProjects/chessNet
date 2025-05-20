@@ -1,4 +1,5 @@
-prevSquare = null
+let prevSquare = null
+let currentBoard = null
 
 function createBoard() {
 
@@ -50,19 +51,23 @@ function resetBoard() {
 }
 
 function setBoard(board) {
+    currentBoard = board
     resetBoard()
     for (let index = 0; index <= 63; index ++){
         const piece = board[index]
+
+        const pieceStyleDropDown = document.getElementById('pieceStyleDropDown')
+        const pieceStylePath = pieceStyleDropDown.value
+
         if (piece) {
             const square = document.querySelector(`[index="${index}"]`);
             const img = document.createElement('img');
-            img.src = `pieceImages/${piece}.png`;
+            img.src = `pieceImages/${pieceStylePath}/${piece}.png`;
             img.classList.add("pieceImage");
             square.appendChild(img);
         }
     }
 }
-
 
 function initGame() {
 
@@ -158,3 +163,11 @@ function removeAllHighlights() {
     const squares = document.querySelectorAll(`[highlighted="True"]`)
     if (squares) {squares.forEach((square) => square.setAttribute('highlighted', 'False'))}
 }
+
+//remake board with different piece style of value change
+const pieceStyleDropDown = document.getElementById('pieceStyleDropDown')
+pieceStyleDropDown.addEventListener("change", () => {
+        console.log("HI")
+        setBoard(currentBoard)
+    }
+)
