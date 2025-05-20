@@ -68,8 +68,9 @@ function initGame() {
 
     createBoard()
     const start = performance.now();
+    const currentURL = window.location.href;
 
-    fetch("https://chessweb-pi.vercel.app/api/api/init", {
+    fetch(currentURL + "api/init", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
