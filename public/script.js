@@ -1,7 +1,7 @@
 prevSquare = null
 let currentBoard = null
-//const currentURL = "https://chessweb-98le.onrender.com/"
-const currentURL = "http://localhost:8080/"
+const currentURL = "https://chessweb-98le.onrender.com/"
+//const currentURL = "http://localhost:8080/"
 
 function createBoard() {
 
