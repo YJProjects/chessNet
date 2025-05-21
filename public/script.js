@@ -135,7 +135,7 @@ function squarePressed(square) {
         let start = performance.now();
         let prevSquareIndex = prevSquare.getAttribute('index')
         let newSquareIndex  = square.getAttribute('index')
-        fetch("http://localhost:8080/api/updateBoard", {
+        fetch(currentURL + "/api/updateBoard", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -157,7 +157,7 @@ function squarePressed(square) {
         start = performance.now();
 
 
-        fetch("http://localhost:8080/api/AIMove", {
+        fetch(currentURL + "/api/AIMove", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
