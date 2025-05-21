@@ -132,10 +132,10 @@ function squarePressed(square) {
         prevSquare = square
     }
     else if(prevSquare && isSquareHighlighted){
-        const start = performance.now();
-        const prevSquareIndex = prevSquare.getAttribute('index')
-        const newSquareIndex  = square.getAttribute('index')
-        fetch(currentURL + "api/updateBoard", {
+        let start = performance.now();
+        let prevSquareIndex = prevSquare.getAttribute('index')
+        let newSquareIndex  = square.getAttribute('index')
+        fetch("http://localhost:8080/api/updateBoard", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -144,12 +144,33 @@ function squarePressed(square) {
         })
         .then((response) => response.json())
         .then((data) => {
-            const end = performance.now(); 
+            let end = performance.now(); 
             console.log(`API call time get new board: ${end - start} milliseconds`);
             console.log(data)
 
             setBoard(data['Board']);
-            const checkMateDiv = document.getElementById("checkmate")
+            let checkMateDiv = document.getElementById("checkmate")
+            if (data['isCheckMate']) {checkMateDiv.textContent = "CHECKMATE"}
+        })
+        .catch((error) => console.error("Error:", error));
+
+        start = performance.now();
+
+
+        fetch("http://localhost:8080/api/AIMove", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            end = performance.now(); 
+            console.log(`API call time get new board: ${end - start} milliseconds`);
+            console.log(data)
+
+            setBoard(data['Board']);
+            checkMateDiv = document.getElementById("checkmate")
             if (data['isCheckMate']) {checkMateDiv.textContent = "CHECKMATE"}
         })
         .catch((error) => console.error("Error:", error));

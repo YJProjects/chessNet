@@ -1,4 +1,3 @@
-
 function pawnMoves(Board, index){
     let moves = []
 
@@ -11,24 +10,32 @@ function pawnMoves(Board, index){
 
     const singlePushSquare = Board.getSquare(index + pushValue) //get the new square ahead of pawn
 
-    if (singlePushSquare && !singlePushSquare.containsPiece()) { //checking if new square exists in the board and it doesn't have a piece in it
+    if (!singlePushSquare?.containsPiece()) { //checking if new square exists in the board and it doesn't have a piece in it
         moves.push(singlePushSquare.index)
 
-        const doublePushRange = {'White' :  [8, 15], 'Black' :  [48, 55]}
+        const doublePushRange = {
+            'White' :  {'leftEnd': 8, 'rightEnd' : 15},
+            'Black' :  {'leftEnd': 48, 'rightEnd' : 55}
+        }
         const doublePushSquare = Board.getSquare(index + (2 * pushValue)) //get the new square two squares ahead of pawn
 
-        if (doublePushSquare && !doublePushSquare.containsPiece()) { //check if the two squares ahead of the pawn is empty
-            if (doublePushRange[piece.color][0] <= square.index && square.index <= doublePushRange[piece.color][1]) { //check we are in the correct row
+        if (!doublePushSquare?.containsPiece()) { //check if the two squares ahead of the pawn is empty
+            if (doublePushRange[piece.color]['leftEnd'] <= square.index && square.index <= doublePushRange[piece.color]['rightEnd']) { //check pawn are in the correct row
                 moves.push(doublePushSquare.index)
             }
         }
     }
 
     //Getting piece attacks
-    const attackValues = {'White' :  [7, 9], 'Black' :  [-9, -7]}
 
-    const westAttackValue = attackValues[piece.color][0]
-    const eastAttackValue = attackValues[piece.color][1]
+    const attackValues = { //defualt values 
+        'White' :  {'West' : 7, 'East': 9},
+        'Black' :  {'West' : -9, 'East': -7}
+        }
+
+
+    const westAttackValue = attackValues[piece.color]['West']
+    const eastAttackValue = attackValues[piece.color]['East']
 
     const westAttackSquare = Board.getSquare(square.index + westAttackValue)
     const eastAttackSquare = Board.getSquare(square.index + eastAttackValue)
@@ -36,12 +43,13 @@ function pawnMoves(Board, index){
     const attackSquares = [westAttackSquare, eastAttackSquare]
     
     attackSquares.forEach(attackSquare => {
-        if (!attackSquare || !attackSquare.containsPiece()) return//attack square exists, has a piece and is of opposite color
-        if (piece.color == attackSquare.piece.color) return
+        if (!attackSquare || !attackSquare.containsPiece()) return //If attack square is Out of Bounds or It's empty we exit
+        if (piece.color == attackSquare.piece.color) return //If piece is of same color we exit
         
         const attackSquareRow = attackSquare.column
         const pieceSquareRow = square.column
-        if(Math.abs(attackSquareRow - pieceSquareRow) == 1) {moves.push(attackSquare.index)} //Difference in columns should be one
+
+        if(Math.abs(attackSquareRow - pieceSquareRow) == 1) {moves.push(attackSquare.index)} //Difference in columns should be one so we don't warp around the board
     });
 
     //check enPassant
@@ -54,7 +62,7 @@ function pawnMoves(Board, index){
 function knightMoves(Board, index) {
     let moves = []
     const square = Board.getSquare(index)
-    const movementDirectionValues = [6, 15, 17, 10, -10, -17, -15, -6]
+    const movementDirectionValues = [6, 15, 17, 10, -10, -17, -15, -6] //All attack directions
 
     movementDirectionValues.forEach((movementDirection) => {
         const newIndex = index + movementDirection
@@ -74,18 +82,20 @@ function knightMoves(Board, index) {
 function kingMoves(Board, index) {
     let moves = []
     const square = Board.getSquare(index)
-    const movementDirectionValues = [9, 8, 7, 1, -1, -7, -8, -9]
+    const movementDirectionValues = [9, 8, 7, 1, -1, -7, -8, -9] //All king directions
 
     movementDirectionValues.forEach((movementDirection) => {
         const newIndex = index + movementDirection
         const newSquare = Board.getSquare(newIndex)
 
         if (!newSquare) {return} //Square is out of bounds
-        if (newSquare.containsPiece()){
-            if (newSquare.piece.color == square.piece.color) {return} //new square contains piece of same color
-        }
-        if (Math.abs(newSquare.column - square.column) > 1) {return} //Square teleported from edge of board making column value too high
-        if (Math.abs(newSquare.row - square.row) > 1) {return} //Square teleported from edge of board making column value too high
+
+        if (newSquare.piece?.color === square.piece.color) {return} //new square contains piece of same color
+
+        if (Math.abs(newSquare.column - square.column) > 1) {return} //Square teleported from horizontal edge of board making column value too high
+
+        if (Math.abs(newSquare.row - square.row) > 1) {return} //Square teleported from vertical edge of board making column value too high
+
         moves.push(newIndex)
     })
 
@@ -276,6 +286,7 @@ function filterMoves(Board, psuedoMoves, index) {
 
     psuedoMoves.forEach((move) => {
         const newBoard = Board.testMovePiece(index, move)
+        newBoard.color = newBoard.colorSwap[newBoard.color]
         if (newBoard.isKingInCheck()) {return}
         
         moves.push(move)
