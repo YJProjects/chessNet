@@ -38,6 +38,30 @@ class AI extends Board {
 
         return randomMove
     }
+
+    evalBoard() {
+        pieceValue = {
+            'Pawn' : 1,
+            'Bishop' : 3,
+            'Knight' : 4,
+            'Rook' : 5,
+            'Queen' : 8,
+            'King' : 1000
+        }
+
+        const evalValue = 0
+        for (let index = 0; index <= 63; index++) {
+            const square = this.getSquare(index)
+            if (square.piece && square.piece.color == "White") {
+                evalValue += pieceValue[square.piece.type]
+            }
+            else if (square.piece && square.piece.color == "Black") {
+                evalValue -= pieceVAlue[square.piece.type]
+            }
+        }
+
+        return evalBoard()
+    }
 }
 
 module.exports = AI

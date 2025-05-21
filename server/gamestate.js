@@ -13,9 +13,15 @@ function getMoves(index) {
     return legalMoves(gameBoard, index)
 }
 
-function updateBoard(from, to) {
-    gameBoard.movePiece(from, to, callAIMove = true )
+function getAIMoves() {
+    gameBoard.playAIMove()
     return gameBoard
 }
 
-module.exports = {createBoard, getMoves, updateBoard}
+function updateBoard(from, to) {
+    gameBoard.movePiece(from, to, callAIMove = true )
+    console.log(gameBoard.evalBoard())
+    return gameBoard
+}
+
+module.exports = {createBoard, getMoves, updateBoard, getAIMoves}

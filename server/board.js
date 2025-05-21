@@ -19,10 +19,6 @@ class Square {
         this.piece = new Piece(type, color, this.index);
     }
 
-    isOccupied() {
-        return (this.piece)? true : false;
-    }
-
     getRow(index) {
         return Math.floor(index / 8)
     }
@@ -168,19 +164,19 @@ class Board {
         } 
 
         //check if move was a castle
-        if (from = 4 && to == 6 && startPiece.type == "King") {//king moves from 4 to 6
+        if (from == 4 && to == 6 && startPiece.type == "King") {//king moves from 4 to 6
             this.squares[5].piece = this.squares[7].piece
             this.squares[7].piece = null
         }
-        if (from = 4 && to == 2 && startPiece.type == "King") {
+        if (from == 4 && to == 2 && startPiece.type == "King") {
             this.squares[3].piece = this.squares[0].piece
             this.squares[0].piece = null
         }
-        if (from = 60 && to == 58 && startPiece.type == "King") {
+        if (from == 60 && to == 58 && startPiece.type == "King") {
             this.squares[5].piece = this.squares[7].piece
             this.squares[7].piece = null
         }
-        if (from = 60 && to == 62 && startPiece.type == "King") {
+        if (from == 60 && to == 62 && startPiece.type == "King") {
             this.squares[59].piece = this.squares[56].piece
             this.squares[56].piece = null
         }
@@ -212,15 +208,11 @@ class Board {
         this.Board = this.getSquareIndexToPiece() //remake the board
         this.color = this.colorSwap[this.color] //change color
 
-        if (callAIMove) {
-            this.genAIMove()
-        }
     }
 
     testMovePiece(from, to) {
         const newBoard = this.clone()
         newBoard.movePiece(from, to)
-        newBoard.color = newBoard.colorSwap[newBoard.color]
         return newBoard
 
 
@@ -240,7 +232,7 @@ class Board {
         const enPassantPush = {'White' : 8, 'Black' : -8}
         const square = this.getSquare(from)
 
-        if (!(square.piece.type == 'Pawn')) {return} //piece must be a pawn
+        if (!square.piece || !(square.piece.type == 'Pawn')) {return} //piece must be a pawn
         if (!(Math.abs(from - to) == 16)) {return} //row different must be 16
         if (!(enPassantRange[square.piece.color][0] <= from && from <= enPassantRange[square.piece.color][1])) {return} //piece must be in correct row
         
@@ -335,15 +327,123 @@ class Board {
         return [randomPiece, randomMove]
     }
 
-    genAIMove() {
-        const moveGen =  this.randomMove()
+    playAIMove() {
+        const moveGen =  this.getAIMove()
 
         if (!moveGen) {return}
         const from = moveGen[0]
         const to = moveGen[1]
 
         this.movePiece(from, to)
+        
     }
+
+    evalBoard() {
+        const pieceValue = {
+            'Pawn' : 1,
+            'Bishop' : 3,
+            'Knight' : 4,
+            'Rook' : 5,
+            'Queen' : 8,
+            'King' : 1000
+        }
+
+        let evalValue = 0
+        for (let index = 0; index <= 63; index++) {
+            const square = this.getSquare(index)
+            if (square.piece && square.piece.color == "White") {
+                evalValue += pieceValue[square.piece.type]
+            }
+            else if (square.piece && square.piece.color == "Black") {
+                evalValue -= pieceValue[square.piece.type]
+            }
+        }
+
+        if (this.isKingInCheck()) {
+            if (this.color == "Black") {evalValue += 1000}
+            if (this.color == "White") {evalValue -= 1000}
+        }
+
+        return evalValue
+    }
+
+    getAIMove() {
+    function minimax(board, depth, alpha, beta, isMaximizingPlayer) {
+        if (board.isCheckMate()) {
+            return [null, null, isMaximizingPlayer ? -Infinity : Infinity];
+        }
+        if (depth === 0) {
+            return [null, null, board.evalBoard()];
+        }
+
+        let bestFrom = null;
+        let bestTo = null;
+
+        const pieceIndexToMoveIndex = board.getAllAvailibleMoves();
+        const pieceIndexes = Object.keys(pieceIndexToMoveIndex).map(Number);
+        let leaveLoop = false
+
+        if (isMaximizingPlayer) {
+            let bestEval = -Infinity;
+            
+
+            for (let pieceIndex of pieceIndexes) {
+                for (let moveIndex of pieceIndexToMoveIndex[pieceIndex]) {
+                    const newBoard = board.testMovePiece(pieceIndex, moveIndex);
+
+                    const [_, __, evalScore] = minimax(newBoard, depth - 1, alpha, beta, false);
+
+                    if (evalScore > bestEval) {
+                        bestEval = evalScore;
+                        bestFrom = pieceIndex;
+                        bestTo = moveIndex;
+                    }
+
+                    alpha = Math.max(evalScore, alpha)
+                    if (beta <= alpha) {
+                        leaveLoop = true
+                        break
+                    }
+                }
+                if (leaveLoop) {break}
+            }
+
+            return [bestFrom, bestTo, bestEval];
+
+        } else {
+            let bestEval = Infinity;
+
+            for (let pieceIndex of pieceIndexes) {
+                for (let moveIndex of pieceIndexToMoveIndex[pieceIndex]) {
+                    const newBoard = board.testMovePiece(pieceIndex, moveIndex);
+
+                    const [_, __, evalScore] = minimax(newBoard, depth - 1, alpha, beta, true);
+
+                    if (evalScore < bestEval) {
+                        bestEval = evalScore;
+                        bestFrom = pieceIndex;
+                        bestTo = moveIndex;
+                    }
+
+                    beta = Math.min(evalScore, beta)
+                    if (beta <= alpha) {
+                        leaveLoop = true
+                        break
+                    }
+                }
+                if (leaveLoop) {break}
+            }
+
+            return [bestFrom, bestTo, bestEval];
+        }
+    }
+
+    const [from, to, _] = minimax(this, 3, -Infinity, Infinity, false);
+    return [from, to];
+}
+
+
+    
 
 }
 
