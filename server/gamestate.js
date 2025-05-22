@@ -20,7 +20,6 @@ function getAIMoves() {
 
 function updateBoard(from, to) {
     gameBoard.movePiece(from, to, callAIMove = true )
-    console.log(gameBoard.evalBoard())
     return gameBoard
 }
 

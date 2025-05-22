@@ -93,6 +93,55 @@ class Board {
         }
     }
 
+    convertBoardToFen() {
+        const pieceToFenPiece = {
+            "Pawn": "P",
+            "Rook": "R",
+            "Knight": "N",
+            "Bishop": "B",
+            "Queen": "Q",
+            "King": "K"
+        };
+
+        let fenString = "";
+
+        for (let row = 7; row >= 0; row--) {
+            let emptyCount = 0;
+
+            for (let column = 0; column < 8; column++) {
+                const index = (row * 8) + column;
+                const square = this.getSquare(index);
+
+                if (square.containsPiece()) {
+                    if (emptyCount > 0) {
+                        fenString += emptyCount;
+                        emptyCount = 0;
+                    }
+
+                    const pieceChar = pieceToFenPiece[square.piece.type];
+                    fenString += (square.piece.color === "White") ? pieceChar : pieceChar.toLowerCase();
+                } else {
+                    emptyCount += 1;
+                }
+            }
+
+            if (emptyCount > 0) {
+                fenString += emptyCount;
+            }
+
+            if (row > 0) {
+                fenString += "/";
+            }
+        }
+
+        return fenString;
+    }
+
+    convertFenToBoard(FEN) {
+        
+    }
+
+
     clone() {
         const newBoard = new Board();
 
@@ -329,6 +378,7 @@ class Board {
 
     playAIMove() {
         const moveGen =  this.getAIMove()
+        console.log(this.convertBoardToFen())
 
         if (!moveGen) {return}
         const from = moveGen[0]
