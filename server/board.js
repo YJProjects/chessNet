@@ -881,7 +881,7 @@ class Board {
 
     playerMoves(index) {
         const color = this.getPieceColor(index)
-        //if (color != this.currentPlayerColor) {return []} //Piece clicked is of wrong player
+        if (color != this.currentPlayerColor) {return []} //Piece clicked is of wrong player
 
         const pieceType = this.getPieceType(index)
         let moves = this.pseudoLegalMoves(color, index)
