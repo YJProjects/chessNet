@@ -86,6 +86,7 @@ function initGame() {
     .then((data) => {
         const end = performance.now(); 
         console.log(`API call time to create board: ${end - start} milliseconds`);
+        console.log(data)
         setBoard(data)})
     .catch((error) => console.error("Error:", error));
 
@@ -154,10 +155,10 @@ function squarePressed(square) {
         })
         .catch((error) => console.error("Error:", error));
 
-        start = performance.now();
+        //start = performance.now();
 
 
-        fetch(currentURL + "api/AIMove", {
+       /*fetch(currentURL + "api/AIMove", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -173,7 +174,7 @@ function squarePressed(square) {
             checkMateDiv = document.getElementById("checkmate")
             if (data['isCheckMate']) {checkMateDiv.textContent = "CHECKMATE"}
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => console.error("Error:", error));*/
     }
     removeAllHighlights()
 }

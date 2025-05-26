@@ -1,16 +1,22 @@
-const Board = require("./board")
-const {legalMoves} = require("./moves")
+const {Board} = require("./board")
 
 let gameBoard = null
 
 function createBoard() {
-    gameBoard = new Board
+    gameBoard = new Board()
     console.log("New Board Created! ")
-    return gameBoard.Board
+    return gameBoard.getPieceBoard()
 }
 
-function getMoves(index) {
-    return legalMoves(gameBoard, index)
+function getPlayerMoves(index) {
+    start = performance.now();
+
+    const moves = gameBoard.playerMoves(BigInt(index))
+
+    end = performance.now();
+    console.log(`Time get piece moves: ${end - start} milliseconds`);
+
+    return moves
 }
 
 function getAIMoves() {
@@ -19,8 +25,8 @@ function getAIMoves() {
 }
 
 function updateBoard(from, to) {
-    gameBoard.movePiece(from, to, callAIMove = true )
+    gameBoard.updateBoard(BigInt(from), BigInt(to))
     return gameBoard
 }
 
-module.exports = {createBoard, getMoves, updateBoard, getAIMoves}
+module.exports = {createBoard, getPlayerMoves, updateBoard, getAIMoves}
