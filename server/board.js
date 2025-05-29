@@ -118,7 +118,6 @@ class Board {
 
         this.whitePieces = new Bitboard(this.whitePawns.bitboard | this.whiteRooks.bitboard | this.whiteKnights.bitboard | this.whiteBishops.bitboard | this.whiteQueen.bitboard | this.whiteKing.bitboard)
         this.blackPieces = new Bitboard(this.blackPawns.bitboard | this.blackRooks.bitboard | this.blackKnights.bitboard | this.blackBishops.bitboard | this.blackQueen.bitboard | this.blackKing.bitboard)
-
         this.board = new Bitboard(this.whitePieces.bitboard | this.blackPieces.bitboard)
         this.empty = new Bitboard(this.board.not())
 
@@ -155,6 +154,16 @@ class Board {
     swapColor(color) {
         if (color == "White") {return "Black"}
         if (color == "Black") {return "White"}
+    }
+
+    getRow(index) {
+        index = BigInt(index)
+        return BigInt(Math.floor(Number(index / 8n)))
+    }
+
+    getColumn(index) {
+        index = BigInt(index)
+        return BigInt(Math.floor(Number(index % 8n)))
     }
 
     loadMagicBitBoardsFromFile(filename) {
@@ -294,36 +303,6 @@ class Board {
         }
 
         this.swapPlayer()
-    }
-
-    /**
-     * Create a bitboard with bits set in a straight line from `to` to `from` (not including `from`)
-     * @param {bigint} from - starting square to exclude
-     * @param {bigint} to - ending square to include
-     * @returns {bigint} - bitboard with bits set on the line
-     */
-    createLine(to, from) {
-        const toX = Number(to % 8n), toY = Number(to / 8n)
-        const fromX = Number(from % 8n), fromY = Number(from / 8n)
-
-        const dx = Math.sign(fromX - toX)
-        const dy = Math.sign(fromY - toY)
-
-        let line = 0n
-        let x = toX, y = toY
-
-        while (true) {
-            x += dx
-            y += dy
-
-            if (x === fromX && y === fromY) break
-            if (x < 0 || x > 7 || y < 0 || y > 7) break
-
-            let index = BigInt(y * 8 + x)
-            line |= 1n << index
-        }
-
-        return new Bitboard(line)
     }
 
 
@@ -755,77 +734,148 @@ class Board {
 
 
     filterForPinnedPiecesMoves(color, moves, pieceIndex) {
-
-
         const kingIndex = this.getKingIndex(color)
-        const slidingLineMoves = this.rookMoves(this.swapColor(color), kingIndex).bitboard
-        const slidingDiagonalMoves = this.bishopMoves(this.swapColor(color), kingIndex).bitboard
+        const kingRow = this.getRow(kingIndex)
+        const kingColumn = this.getColumn(kingIndex)
 
-        let rookBoard = null; let queenBoard = null; let bishopBoard = null;
+        const pieceRow = this.getRow(pieceIndex)
+        const pieceColumn = this.getColumn(pieceIndex)
+
+        let enemyRookBoard; let enemyBishopBoard; let enemyQueenBoard; let enemyColor;
 
         if (color == "White") {
-            rookBoard = this.blackRooks
-            queenBoard = this.blackQueen
-            bishopBoard = this.blackBishops
+            enemyRookBoard = this.blackRooks
+            enemyBishopBoard = this.blackBishops
+            enemyQueenBoard = this.blackQueen
+            enemyColor = "Black"
         }
-        if (color == "Black") {
-            rookBoard = this.whiteRooks
-            queenBoard = this.whiteQueen
-            bishopBoard = this.whiteBishops
+        else {
+            enemyRookBoard = this.whiteRooks
+            enemyBishopBoard = this.whiteBishops
+            enemyQueenBoard = this.whiteQueen
+            enemyColor = "White"
         }
 
-        //Horizontal Pieces which can pin
-        let pinnerIndexes = []
-        pinnerIndexes = pinnerIndexes.concat(rookBoard.bitboardToIndexes())
-        pinnerIndexes = pinnerIndexes.concat(queenBoard.bitboardToIndexes())
+        const enemyRookIndexes = enemyRookBoard.bitboardToIndexes()
+        const enemyQueenIndexes = enemyQueenBoard.bitboardToIndexes()
+        const enemyBishopIndexes = enemyBishopBoard.bitboardToIndexes()
+        let filteredMoves = moves
+        
+        //Straight Pins
+        const kingStraightMoves = this.rookMoves(enemyColor, kingIndex)
+        let enemyPinnerPiecesIndexes = enemyQueenIndexes.concat(enemyRookIndexes) //pieces which can pin our piece
 
-        let pinningPieceIndex = null
+        enemyPinnerPiecesIndexes.forEach((enemyPieceIndex) => {
+            const enemyPieceStraightMoves = this.rookMoves(enemyColor, enemyPieceIndex)
 
-        pinnerIndexes?.forEach((possiblePinnerIndex) => {
-            possiblePinnerIndex = BigInt(possiblePinnerIndex)
-            const slidingMoves = this.rookMoves(this.swapColor(color), possiblePinnerIndex).bitboard
-            this.LinePinnedPieces = new Bitboard(slidingLineMoves & slidingMoves)
-            if (this.LinePinnedPieces.isOne(pieceIndex)) {
-                console.log("THIS MF PIECE IS MF PINNED")
-                console.log("KING INDEX:", kingIndex)
-                console.log("PinningPieceIndex", possiblePinnerIndex)
-                pinningPieceIndex = possiblePinnerIndex
-                return
+            const moveIntersection = new Bitboard(enemyPieceStraightMoves.bitboard & kingStraightMoves.bitboard)
+            
+            if (moveIntersection.isOne(pieceIndex)) {
+                const enemyPieceRow = this.getRow(enemyPieceIndex)
+                const enemyPieceColumn = this.getColumn(enemyPieceIndex)
+
+                if ((pieceRow == kingRow && kingRow == enemyPieceRow) || (pieceColumn == kingColumn && kingColumn == enemyPieceColumn)) {
+                    const line = this.createStraightLine(kingIndex, enemyPieceIndex)
+                    filteredMoves =  new Bitboard(moves.bitboard & line.bitboard)
+                }
             }
         })
 
-        if (pinningPieceIndex) {
-            const pineLine = this.createLine(kingIndex, pinningPieceIndex)
-            return new Bitboard(moves.bitboard & pineLine.bitboard)
-        }
+        //Diagonal Pins
+        const kingDiagonalMoves = this.bishopMoves(enemyColor, kingIndex)
+        enemyPinnerPiecesIndexes = enemyQueenIndexes.concat(enemyBishopIndexes) //pieces which can pin our piece
 
-        //Diagonal Pieces which can pin
-        pinnerIndexes = []
-        pinnerIndexes = pinnerIndexes.concat(bishopBoard.bitboardToIndexes())
-        pinnerIndexes = pinnerIndexes.concat(queenBoard.bitboardToIndexes())
+        enemyPinnerPiecesIndexes.forEach((enemyPieceIndex) => {
+            const enemyPieceDiagonalMoves = this.bishopMoves(enemyColor, enemyPieceIndex)
 
-        pinningPieceIndex = null
+            const moveIntersection = new Bitboard(enemyPieceDiagonalMoves.bitboard & kingDiagonalMoves.bitboard)
+            
+            if (moveIntersection.isOne(pieceIndex)) {
+                const enemyPieceRow = this.getRow(enemyPieceIndex)
+                const enemyPieceColumn = this.getColumn(enemyPieceIndex)
 
-        pinnerIndexes?.forEach((possiblePinnerIndex) => {
-            possiblePinnerIndex = BigInt(possiblePinnerIndex)
-            const slidingMoves = this.bishopMoves(this.swapColor(color), possiblePinnerIndex).bitboard
-            this.LinePinnedPieces = new Bitboard(slidingDiagonalMoves & slidingMoves)
-            if (this.LinePinnedPieces.isOne(pieceIndex)) {
-                console.log("THIS MF PIECE IS MF PINNED")
-                console.log("KING INDEX:", kingIndex)
-                console.log("PinningPieceIndex", possiblePinnerIndex)
-                pinningPieceIndex = possiblePinnerIndex
-                return
+                const kingDiffRowColumn = kingRow - kingColumn
+                const kingSumRowColumn = kingColumn + kingRow
+
+                const pieceDiffRowColumn = pieceRow - pieceColumn
+                const pieceSumRowColumn = pieceColumn + pieceRow
+
+                const enemyPieceDiffRowColumn = enemyPieceRow - enemyPieceColumn
+                const enemyPieceSumRowColumn = enemyPieceColumn + enemyPieceRow
+
+                if ((kingDiffRowColumn == pieceDiffRowColumn && pieceDiffRowColumn == enemyPieceDiffRowColumn) || (kingSumRowColumn == pieceSumRowColumn && pieceSumRowColumn == enemyPieceSumRowColumn)) {
+                    const line = this.createDiagonalLine(kingIndex, enemyPieceIndex)
+                    filteredMoves = new Bitboard(moves.bitboard & line.bitboard)
+                }
             }
         })
 
-        if (!pinningPieceIndex) {return moves}
-        if (pinningPieceIndex) {
-            const pineLine = this.createLine(kingIndex, pinningPieceIndex)
-            return new Bitboard(moves.bitboard & pineLine.bitboard)
+        return filteredMoves
+
+        
+    }
+
+    createStraightLine(from, to) {
+        from = Number(from)
+        to = Number(to)
+        const sign = BigInt(Math.sign(to - from))
+        const line = new Bitboard()
+
+        const distance = Math.abs(from - to)
+        const increment = distance <= 7 ? 1n : 8n 
+
+        from = BigInt(from)
+        to = BigInt(to)
+
+        if (sign == 1) {
+            for (let index = from + increment; index <= to; index += increment) {
+                line.setBit(index)
+            }
         }
-        return moves
-    
+        else {
+            for (let index = from - increment; index >= to; index -= increment) {
+                line.setBit(index)
+            }
+        }
+
+        return line
+    }
+
+    createDiagonalLine(from, to) {
+        from = BigInt(from)
+        to = BigInt(to)
+        
+        const line = new Bitboard()
+
+        const fromRow = this.getRow(from)
+        const fromColumn = this.getColumn(from)
+
+        const toRow = this.getRow(to)
+        const toColumn = this.getColumn(to)
+
+        const columnDiff = toColumn - fromColumn
+        const rowDiff = toRow - fromRow
+
+        let increment;
+
+        if (columnDiff > 0n & rowDiff > 0n) {increment = 9n}
+        else if (columnDiff < 0n & rowDiff > 0n) {increment = 7n}
+        else if (columnDiff > 0n & rowDiff < 0n) {increment = -7n}
+        else if (columnDiff < 0n & rowDiff < 0n) {increment = -9n}
+
+        if (rowDiff > 0) {
+            for (let index = from + increment; index <= to; index += increment) {
+                line.setBit(index)
+            }
+        }
+        else {
+            for (let index = from + increment; index >= to; index += increment) {
+                line.setBit(index)
+            }
+        }
+
+        return line
+
     }
 
 
@@ -847,9 +897,6 @@ class Board {
             else {
                 //We treat the king as the same sliding piece as the checking piece. if we & both the boards we get 1's between the two pieces
                 // if we & this new board with our moves board we get legal blocking pieces
-                //print board COPILOT
-
-
                 let kingSlidingMoves = null
                 let enemyPieceSlidingMoves = null
                 const kingIndex = this.getKingIndex(color)
